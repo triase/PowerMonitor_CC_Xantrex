@@ -1,0 +1,10 @@
+8pm, Inverter offline
+Setup: Transmitter on UNO
+Status: 255
+Power: 0
+Energy: 14724
+Voltage: 0.00
+vcc: 4907
+Standby Status: 255
+Xantrex Output = Online,0,14724,4907
+Xantrex Output Sent

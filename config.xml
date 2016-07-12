@@ -1,0 +1,8 @@
+<config>
+  <apikey>PVOUTPUT API KEY</apikey>
+  <systemid>PVOUTPUT SYSTEM ID</systemid>
+  <host>pvoutput.org</host>
+  <service>/service/r1/addstatus.jsp</service>
+  <serialport>/dev/ttyUSB0</serialport>
+  <scriptpath>/mnt/sda1/currentcost/</scriptpath>
+</config>
