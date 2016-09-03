@@ -90,6 +90,12 @@ solargeneration = 0
 while True:
     # Get data from Current Cost
     sensor, watts, solargeneration = pullFromCurrentCost(solargeneration)
+    
+    #Get Solar Power from Bridge
+    bridgesolar = bridgevalue.get("SolarPower")
+    WHToday = bridgevalue.get("WHToday")
+    Arduino_Battery = bridgevalue.get("VCCBatt")
+    	
     FileName = SCRIPTPATH + time.strftime("%d-%m-%Y") + ".csv"
     # open data file
     try:
@@ -103,7 +109,8 @@ while True:
     PollDate = time.strftime("%d/%m/%Y")
     PollTime = time.strftime("%H:%M:%S")
     PollDateTime = PollDate + " - " + PollTime
-    string   = PollDate + "," + PollTime + "," + str(sensor) + "," + sensorNames[int(sensor)] + "," + str(watts) + "\n"
+    string   = PollDate + "," + PollTime + "," + str(sensor) + "," + sensorNames[int(sensor)] + "," + str(watts - int(bridgesolar)) + ",," + "\n"
+    string   = string + PollDate + "," + PollTime + "," + "1,HouseSolar," + str(bridgesolar) + "," + str(WHToday) + "," + str(Arduino_Battery) + "\n"
     datafile.write( string )
     datafile.close()
     print string,
@@ -111,7 +118,7 @@ while True:
     #Write values to the Bridge for the MCU to access
     bridgevalue.put("DateTime", PollDateTime)
     if sensorNames[int(sensor)] == "HouseSensor":
-        bridgevalue.put("HousePower", str(watts))
+        bridgevalue.put("HousePower", str(watts - int(bridgesolar)))
     #Comment this out as now getting Solar Power direct from Xantrex on the MCU
     #elif sensorNames[int(sensor)] == "SolarSensor":
     #    bridgevalue.put("SolarPower", str(watts))

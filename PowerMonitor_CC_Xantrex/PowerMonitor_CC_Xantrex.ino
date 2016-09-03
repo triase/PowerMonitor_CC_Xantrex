@@ -37,6 +37,8 @@ char charBridgeSolarPower[10] = "0";	//Power that the solar panels are generatin
 char charBridgeSolarWHToday[10] = "0";	//Power that the solar panels have generated for the day
 char charBridgeDateTime[20] = "0";		//Current date and time 
 
+String strBatteryVcc = "0";    //Battery voltage for the UNO Transmitter
+String strXantrexWHToday = "";  //Xantrex WHToday value
 String strXantrexPOutput = "0";   //Stores Xantrex PVOutput
 
 int intNoRFCount = 0;  //Keep track of number of times there is no RF transmission
@@ -69,8 +71,7 @@ void loop(){
 	String strHousePower = "Power: ";  //String for LCD display
 	String strSolarPower = "Solar: ";  //String for LCD display
 	String strRFInput = "";			//Stores received RF value
-	String strXantrexWHToday = "";	//Xantrex WHToday value
-	String strBatteryVcc = "";		//Battery voltage for the UNO Transmitter
+	
 	String strXantrexStatus = "";	//Can remove this?
 
 	int indexfrom = 0;	//Stores from index of the delimiter of the received RF string
@@ -81,6 +82,7 @@ void loop(){
 	//Receive data from RF to get solar reading from Xantrex
 	//POUT (Watts),WHTODAY (Watts),BAT (mV)
 	strRFInput = Receive_RF();
+  Serial.println("RFIinput = " + strRFInput);
 	
 	//If nothing received from the RF Receiver, increment the counter
 	if (strRFInput.length() == 0) {
@@ -92,40 +94,44 @@ void loop(){
 			intNoRFCount = 0;
 		}
 	}
-	//Serial.println("NoRFCount = " + String(intNoRFCount));
+	Serial.println("NoRFCount = " + String(intNoRFCount));
 	
 	//Work through RF string to retrieve values from the Inverter
 	//tokenfrom and tokento used to identify delimiters in RF string
 	if (strRFInput.startsWith("Online")){
 		strXantrexStatus = "Online";
+    intNoRFCount = 0;
 		
 		//Get POut value
 		indexfrom = strRFInput.indexOf(",")+1;
 		indexto = strRFInput.indexOf(",", indexfrom);
 		strXantrexPOutput = strRFInput.substring(indexfrom,indexto);
-		Serial.println("POutput = " + strXantrexPOutput);
+		//Serial.println("POutput = " + strXantrexPOutput);
 		
 		//Get WHToday value
 		indexfrom = strRFInput.indexOf(",", indexto)+1;
 		indexto = strRFInput.indexOf(",", indexfrom);
 		strXantrexWHToday = strRFInput.substring(indexfrom, indexto);
+    //Serial.println("WHToday = " + strXantrexWHToday);
 		
 		//Get Battery voltage
 		indexfrom = strRFInput.indexOf(",", indexto) + 1;
 		strBatteryVcc = strRFInput.substring(indexfrom);
+    //Serial.println("Arduino_Battery = " + strBatteryVcc);
 	}
 
 	//Put inverter solar value on the Bridge
 	//Do this first as Solar power now received directly from the inverter
 	Bridge.put("SolarPower", String(strXantrexPOutput));
 	Bridge.put("WHToday", String(strXantrexWHToday));
+  Bridge.put("VCCBatt", String(strBatteryVcc));
 	
 	//Query key pair values from the Bridge
 	Bridge.get("HousePower", charBridgeHousePower, 10);
 	Bridge.get("SolarPower", charBridgeSolarPower, 10);
 	Bridge.get("SolarWHToday", charBridgeSolarWHToday, 10);
-	Bridge.get("DateTime", charBridgeDateTime, 20);
-	
+	//Bridge.get("DateTime", charBridgeDateTime, 20);
+  
 	//Output values on LCD
 	lcd.setCursor(0, 0);
 	lcd.print(String(strHousePower + charBridgeHousePower + "     "));
@@ -139,7 +145,10 @@ void loop(){
 	}
 
 	//Debugging
-	Serial.println(String(charBridgeDateTime));
+	//Serial.println(String(charBridgeDateTime));
+  Serial.println(String(strHousePower + charBridgeHousePower));
+  Serial.println(String(strSolarPower + charBridgeSolarPower));
+  Serial.println(String("Battery Power: " + strBatteryVcc));
 	Serial.println(String(strSolarPower + charBridgeSolarPower + " POutput = " + strXantrexPOutput + " WHToday = " + strXantrexWHToday));
 	//Serial.println(currentPVOutputTime);
 	//Serial.println(previousPVOutputTime);
